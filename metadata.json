@@ -1,0 +1,6 @@
+{
+  "name": "ImmoWin",
+  "description": "Plateforme SaaS immobilière d'estimation, de recherche et de gestion professionnelle en Algérie avec support DZD.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
