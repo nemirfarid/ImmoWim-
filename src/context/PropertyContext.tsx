@@ -67,7 +67,25 @@ const PropertyContext = createContext<PropertyContextType | undefined>(undefined
 export const PropertyProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [properties, setProperties] = useState<Property[]>(() => {
     const saved = localStorage.getItem('immowin_properties');
-    return saved ? JSON.parse(saved) : INITIAL_PROPERTIES;
+    if (!saved) return INITIAL_PROPERTIES;
+    try {
+      const parsed: Property[] = JSON.parse(saved);
+      // Ensure all loaded properties have videos attached for demo compatibility
+      return parsed.map((p, idx) => ({
+        ...p,
+        videos: (p.videos && p.videos.length > 0)
+          ? p.videos
+          : [
+              idx % 3 === 0 
+                ? "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+                : idx % 3 === 1
+                ? "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                : "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+            ]
+      }));
+    } catch {
+      return INITIAL_PROPERTIES;
+    }
   });
 
   const [leads, setLeads] = useState<Lead[]>(() => {
@@ -93,19 +111,35 @@ export const PropertyProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    localStorage.setItem('immowin_properties', JSON.stringify(properties));
+    try {
+      localStorage.setItem('immowin_properties', JSON.stringify(properties));
+    } catch (e) {
+      console.warn("Storage quota warning for properties", e);
+    }
   }, [properties]);
 
   useEffect(() => {
-    localStorage.setItem('immowin_leads', JSON.stringify(leads));
+    try {
+      localStorage.setItem('immowin_leads', JSON.stringify(leads));
+    } catch (e) {
+      console.warn("Storage quota warning for leads", e);
+    }
   }, [leads]);
 
   useEffect(() => {
-    localStorage.setItem('immowin_subscriptions', JSON.stringify(subscriptions));
+    try {
+      localStorage.setItem('immowin_subscriptions', JSON.stringify(subscriptions));
+    } catch (e) {
+      console.warn("Storage quota warning for subscriptions", e);
+    }
   }, [subscriptions]);
 
   useEffect(() => {
-    localStorage.setItem('immowin_notifications', JSON.stringify(matchNotifications));
+    try {
+      localStorage.setItem('immowin_notifications', JSON.stringify(matchNotifications));
+    } catch (e) {
+      console.warn("Storage quota warning for notifications", e);
+    }
   }, [matchNotifications]);
 
   const showToast = (msg: string) => {

@@ -42,6 +42,7 @@ export interface Property {
     lng: number;
   };
   sellerName: string;
+  sellerGender?: 'homme' | 'femme';
   sellerPhone: string;
   sellerEmail: string;
   dateAdded: string;
@@ -130,6 +131,7 @@ export interface CriteriaSubscription {
   roleCategory: UserRoleCategory;
   userTitle: string; // e.g., "Acheteur particulier", "Agence Immo Al-Badr", "Promoteur Baya"
   contactName: string;
+  gender?: 'homme' | 'femme';
   email: string;
   phone: string;
   wilaya: string;

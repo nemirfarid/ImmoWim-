@@ -28,6 +28,9 @@ export const CriteriaAlertModal: React.FC<CriteriaAlertModalProps> = ({ onClose 
   // Form State
   const [userTitle, setUserTitle] = useState('');
   const [contactName, setContactName] = useState('');
+  const [gender, setGender] = useState<'homme' | 'femme'>('homme');
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [searchDescription, setSearchDescription] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [wilaya, setWilaya] = useState('Alger');
@@ -66,6 +69,7 @@ export const CriteriaAlertModal: React.FC<CriteriaAlertModalProps> = ({ onClose 
       roleCategory: activeRoleCategory,
       userTitle: categoryTitles[activeRoleCategory],
       contactName,
+      gender,
       email,
       phone,
       wilaya,
@@ -122,9 +126,11 @@ export const CriteriaAlertModal: React.FC<CriteriaAlertModalProps> = ({ onClose 
           <button
             id="close-criteria-modal-btn"
             onClick={onClose}
-            className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+            className="px-3.5 py-2 rounded-full bg-rose-500/20 hover:bg-rose-500 text-white transition-all cursor-pointer border border-rose-400/30 flex items-center gap-1.5 font-bold text-xs shadow-md"
+            title="Quitter la page (X)"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 stroke-[2.5]" />
+            <span>{language === 'AR' ? 'إغلاق الصفحة (X)' : 'Quitter (X)'}</span>
           </button>
         </div>
 
@@ -262,7 +268,21 @@ export const CriteriaAlertModal: React.FC<CriteriaAlertModalProps> = ({ onClose 
 
               {/* Form Controls */}
               <form onSubmit={handleSubmit} className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                      {language === 'AR' ? 'الجنس (رجل / امرأة)' : 'Genre (Homme / Femme)'}
+                    </label>
+                    <select
+                      value={gender}
+                      onChange={e => setGender(e.target.value as 'homme' | 'femme')}
+                      className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="homme">👨 Homme (M.)</option>
+                      <option value="femme">👩 Femme (Mme)</option>
+                    </select>
+                  </div>
+
                   <div>
                     <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
                       {activeRoleCategory === 'acheteurs' ? 'Nom ou Pseudonyme' : 'Nom de l\'Organisme / Agence / Nom'}
@@ -351,6 +371,59 @@ export const CriteriaAlertModal: React.FC<CriteriaAlertModalProps> = ({ onClose 
                       <option value="Terrain">Terrain Constructible</option>
                       <option value="Local Commercial">Local Commercial</option>
                     </select>
+                  </div>
+                </div>
+
+                {/* Written Search Description Field */}
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                    {language === 'AR' 
+                      ? 'وصف مكتوب مفصّل لما تبحث عنه أو مواصفات طلبك *' 
+                      : 'Description détaillée par écrit de ce que vous cherchez *'}
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={searchDescription}
+                    onChange={e => setSearchDescription(e.target.value)}
+                    placeholder={
+                      language === 'AR'
+                        ? 'مثال: أبحث عن شقة F4 واسعة، مشمسة، مع مصعد وركن للسيارات بالقرب من وسائل النقل والمدرس...'
+                        : 'ex: Cherche appartement F4 lumineux avec balcon, ascenseur et place de parking, proche écoles et tramway...'
+                    }
+                    className="w-full p-3 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-900 focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                {/* Photo / Agency Logo Upload Input */}
+                <div className="p-3 rounded-xl bg-white border border-slate-200 space-y-1">
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase">
+                    {language === 'AR' 
+                      ? 'إضافة صورتك أو شعار الوكالة/الشركة (اختياري)' 
+                      : 'Photo de profil ou Logo Agence / Entreprise (Optionnel)'}
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt="Logo" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-lg">{gender === 'femme' ? '👩' : activeRoleCategory === 'promoteurs' || activeRoleCategory === 'agences' ? '🏢' : '👨'}</span>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            if (ev.target?.result) setAvatarUrl(ev.target.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-slate-900 file:text-white hover:file:bg-slate-800 cursor-pointer"
+                    />
                   </div>
                 </div>
 
@@ -492,31 +565,43 @@ export const CriteriaAlertModal: React.FC<CriteriaAlertModalProps> = ({ onClose 
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col gap-2 pt-1">
+                          {/* 1. WhatsApp */}
                           <a
                             href={getWhatsAppLink(notif.contactPhone, `Bonjour ${notif.contactName}, suite à notre match sur ImmoWin concernant ${notif.title}...`)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+                            className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-between cursor-pointer shadow-xs"
                           >
-                            <MessageCircle className="w-3.5 h-3.5 fill-white shrink-0" />
-                            <span>WhatsApp</span>
+                            <div className="flex items-center gap-2">
+                              <MessageCircle className="w-3.5 h-3.5 fill-white shrink-0" />
+                              <span>WhatsApp</span>
+                            </div>
+                            <span dir="ltr" className="font-mono text-[10px] font-bold text-emerald-100 bg-emerald-700/60 px-2 py-0.5 rounded">{notif.contactPhone}</span>
                           </a>
 
+                          {/* 2. Phone Call */}
                           <a
                             href={getTelLink(notif.contactPhone)}
-                            className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+                            className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-between cursor-pointer shadow-xs border border-slate-800"
                           >
-                            <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                            <span>Appeler</span>
+                            <div className="flex items-center gap-2">
+                              <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                              <span>Appeler</span>
+                            </div>
+                            <span dir="ltr" className="font-mono text-[10px] font-bold text-emerald-300 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">{notif.contactPhone}</span>
                           </a>
 
+                          {/* 3. Message Direct */}
                           <a
                             href={getSmsLink(notif.contactPhone, `Bonjour ${notif.contactName}, information pour votre annonce/demande sur ImmoWin.`)}
-                            className="px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+                            className="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs flex items-center justify-between cursor-pointer shadow-xs"
                           >
-                            <MessageSquare className="w-3.5 h-3.5 shrink-0" />
-                            <span>SMS</span>
+                            <div className="flex items-center gap-2">
+                              <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                              <span>Message</span>
+                            </div>
+                            <span dir="ltr" className="font-mono text-[10px] font-bold text-sky-100 bg-sky-700/60 px-2 py-0.5 rounded">{notif.contactPhone}</span>
                           </a>
                         </div>
                       </div>

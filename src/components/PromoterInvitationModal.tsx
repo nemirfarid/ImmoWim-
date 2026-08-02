@@ -33,7 +33,7 @@ export const PromoterInvitationModal: React.FC<PromoterInvitationModalProps> = (
 
   const [promoterName, setPromoterName] = useState('');
   const [wilaya, setWilaya] = useState('Alger');
-  const [phoneNumber, setPhoneNumber] = useState('0773474096');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [copied, setCopied] = useState(false);
   const [msgLang, setMsgLang] = useState<'FR' | 'AR'>('FR');
 
@@ -55,12 +55,12 @@ Nous avons le plaisir de vous inviter à rejoindre *ImmoWin* (https://immowin.dz
 2️⃣ *0 DZD Commission & Direct Vendeur* : Aucun intermédiaire ! Les acheteurs et investisseurs vous contactent directement par WhatsApp et téléphone.
 3️⃣ *Prix Clairs en Dinars Algériens (DZD)* : Valorisation transparente et badges de garanties juridiques (Acte Notarié & Livret Foncier).
 4️⃣ *Matching IA Automatique* : Alerte immédiate transmise aux acquéreurs qui recherchent des logements neufs dans votre wilaya (${wilaya}).
-5️⃣ *Support & Accompagnement Dédié* : Équipe disponible 7j/7 sur WhatsApp au +213 773 47 40 96.
+5️⃣ *Support & Accompagnement Dédié* : Équipe disponible 7j/7 sur WhatsApp ImmoWin.
 
 🚀 *Inscrivez-vous et ajoutez vos projets dès aujourd'hui sur ImmoWin :*
 👉 https://immowin.dz
 
-Des questions ? Contactez-nous directement sur WhatsApp : https://wa.me/213773474096`;
+Des questions ? Contactez-nous directement sur ImmoWin : https://immowin.dz`;
 
   // Arabic message template
   const messageAR = `🏢 *دعوة خاصة للترقية العقارية والمطورين - منصة إيمووين ImmoWin* 🇩🇿
@@ -75,19 +75,22 @@ Des questions ? Contactez-nous directement sur WhatsApp : https://wa.me/21377347
 2️⃣ *0 دج عمولة وتواصل مباشر*: بدون أي وسيط! يرتكز التواصل مباشرة بين المشترين والمستثمرين ومعكم عبر الواتساب والهاتف.
 3️⃣ *أسعار واضحة بالدينار الجزائري (DZD)*: توثيق الضمانات القانونية (عقد توثيقي ودفتر عقاري).
 4️⃣ *ربط آلي بالذكاء الاصطناعي*: إشعارات فورية ترسل للمشترين الباحثين عن عقارات جديدة في ولايتكم (${wilaya}).
-5️⃣ *دعم فني خاص للمرقين*: فريق متوافر 7/7 أيام عبر الواتساب: +213 773 47 40 96.
+5️⃣ *دعم فني خاص للمرقين*: فريق متوافر 7/7 أيام عبر منصة إيمووين.
 
 🚀 *سجلوا الآن وأضيفوا مشاريعكم العقارية مجاناً عبر الرابط:*
 👉 https://immowin.dz
 
-لأي استفسار تواصلوا معنا مباشرة عبر واتساب: https://wa.me/213773474096`;
+لأي استفسار تواصلوا معنا مباشرة عبر المنصة: https://immowin.dz`;
 
   const activeMessage = msgLang === 'AR' ? messageAR : messageFR;
 
   const handleOpenWhatsApp = () => {
     const encodedText = encodeURIComponent(activeMessage);
-    const targetPhone = formattedPhone ? formattedPhone : '213773474096';
-    window.open(`https://wa.me/${targetPhone}?text=${encodedText}`, '_blank');
+    if (formattedPhone) {
+      window.open(`https://wa.me/${formattedPhone}?text=${encodedText}`, '_blank');
+    } else {
+      window.open(`https://wa.me/?text=${encodedText}`, '_blank');
+    }
   };
 
   const handleCopyMessage = () => {
@@ -109,9 +112,11 @@ Des questions ? Contactez-nous directement sur WhatsApp : https://wa.me/21377347
         <div className="bg-gradient-to-r from-amber-600 via-emerald-700 to-slate-900 p-6 sm:p-8 relative">
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 sm:top-6 sm:right-6 w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-all cursor-pointer border border-white/20"
+            className="absolute top-5 right-5 sm:top-6 sm:right-6 px-3.5 py-2 rounded-full bg-rose-500/30 hover:bg-rose-600 text-white font-extrabold text-xs transition-all cursor-pointer border border-rose-300/40 shadow-lg flex items-center gap-1"
+            title="Quitter la page (X)"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 stroke-[2.5]" />
+            <span>{isAr ? 'إغلاق (X)' : 'Quitter (X)'}</span>
           </button>
 
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-extrabold mb-3 shadow-md">
@@ -195,7 +200,7 @@ Des questions ? Contactez-nous directement sur WhatsApp : https://wa.me/21377347
 
             <div>
               <label className="block text-[11px] font-bold text-slate-400 mb-1">
-                {isAr ? 'رقم الواتساب المستهدف (أو رقم الدعم 0773474096)' : 'Numéro WhatsApp du Promoteur (ex: 0773474096)'}
+                {isAr ? 'رقم الواتساب المستهدف للمرقي (اختياري)' : 'Numéro WhatsApp du Promoteur (Optionnel)'}
               </label>
               <div className="flex items-center gap-2">
                 <span className="px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-emerald-400 font-mono font-bold">
@@ -203,7 +208,7 @@ Des questions ? Contactez-nous directement sur WhatsApp : https://wa.me/21377347
                 </span>
                 <input
                   type="text"
-                  placeholder="0773474096"
+                  placeholder="07XX XX XX XX"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   dir="ltr"
@@ -293,7 +298,7 @@ Des questions ? Contactez-nous directement sur WhatsApp : https://wa.me/21377347
               className="w-full sm:flex-1 py-3.5 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-950/50 transition-all cursor-pointer flex items-center justify-center gap-2 transform active:scale-98"
             >
               <Send className="w-4 h-4" />
-              <span>{isAr ? 'إرسال الرسالة عبر الواتساب (+213773474096)' : 'Envoyer par WhatsApp (+213 773 47 40 96)'}</span>
+              <span>{isAr ? 'إرسال الدعوة عبر الواتساب' : 'Envoyer l\'Invitation par WhatsApp'}</span>
             </button>
 
             {/* Direct Register as Promoter Button */}
@@ -309,8 +314,8 @@ Des questions ? Contactez-nous directement sur WhatsApp : https://wa.me/21377347
 
           <div className="text-center pt-1">
             <span className="text-[11px] text-slate-500 flex items-center justify-center gap-1">
-              <Phone className="w-3 h-3 text-emerald-400" />
-              <span>Support Promoteurs WhatsApp Direct : <strong className="text-emerald-400 font-mono">+213 773 47 40 96</strong></span>
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>{isAr ? 'دعم وإشعارات المرقين العقاريين على منصة إيمووين ImmoWin' : 'Support & Assistance Dédiés Promoteurs Immobiliers ImmoWin'}</span>
             </span>
           </div>
 

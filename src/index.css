@@ -1,1 +1,12 @@
 @import "tailwindcss";
+
+html, body, #root {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  width: 100% !important;
+}
+
+/* Safe area padding helper for iOS & Android bottom navigation */
+.pb-safe {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}

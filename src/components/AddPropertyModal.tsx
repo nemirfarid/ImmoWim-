@@ -175,21 +175,55 @@ export const AddPropertyModal: React.FC = () => {
     };
   }, [isAddModalOpen]);
 
-  // Handle Photo File Upload
-  const handlePhotoFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    Array.from(files).forEach((file: File) => {
+  // Helper to compress image files to lightweight JPEG data URLs
+  const compressImageFile = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setImages(prev => [...prev, event.target!.result as string]);
-        }
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 1200;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.8));
+        };
+        img.onerror = () => {
+          resolve(e.target?.result as string);
+        };
+        img.src = e.target?.result as string;
       };
       reader.readAsDataURL(file);
     });
-    showToast(`${files.length} photo(s) ajoutée(s) avec succès !`);
+  };
+
+  // Handle Photo File Upload
+  const handlePhotoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    try {
+      const compressedList = await Promise.all(
+        Array.from(files).map((file: File) => compressImageFile(file))
+      );
+      setImages(prev => [...prev, ...compressedList]);
+      showToast(`${files.length} photo(s) ajoutée(s) et optimisée(s) !`);
+    } catch (err) {
+      showToast("Erreur lors de l'importation des photos.");
+    }
   };
 
   // Add Photo URL manually
@@ -197,7 +231,7 @@ export const AddPropertyModal: React.FC = () => {
     if (!newImageUrl.trim()) return;
     setImages(prev => [...prev, newImageUrl.trim()]);
     setNewImageUrl('');
-    showToast("Photo ajoutée !");
+    showToast("Photo ajoutée avec succès !");
   };
 
   const handleRemovePhoto = (idx: number) => {
@@ -210,15 +244,10 @@ export const AddPropertyModal: React.FC = () => {
     if (!files || files.length === 0) return;
 
     Array.from(files).forEach((file: File) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setVideos(prev => [...prev, event.target!.result as string]);
-        }
-      };
-      reader.readAsDataURL(file);
+      const objectUrl = URL.createObjectURL(file);
+      setVideos(prev => [...prev, objectUrl]);
     });
-    showToast(`${files.length} vidéo(s) ajoutée(s) avec succès !`);
+    showToast(`${files.length} vidéo(s) MP4 ajoutée(s) avec succès !`);
   };
 
   // Add Video URL manually
@@ -226,7 +255,14 @@ export const AddPropertyModal: React.FC = () => {
     if (!newVideoUrl.trim()) return;
     setVideos(prev => [...prev, newVideoUrl.trim()]);
     setNewVideoUrl('');
-    showToast("Vidéo ajoutée !");
+    showToast("Vidéo ajoutée avec succès !");
+  };
+
+  const handleAddPresetVideo = (videoUrl: string) => {
+    if (!videos.includes(videoUrl)) {
+      setVideos(prev => [...prev, videoUrl]);
+      showToast("Vidéo démo de visite virtuelle ajoutée !");
+    }
   };
 
   const handleRemoveVideo = (idx: number) => {
@@ -305,9 +341,11 @@ export const AddPropertyModal: React.FC = () => {
 
           <button
             onClick={() => setIsAddModalOpen(false)}
-            className="p-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-rose-100 text-slate-700 hover:text-rose-600 font-extrabold text-xs transition-colors cursor-pointer border border-slate-200 flex items-center gap-1 shadow-xs"
+            title="Quitter la page (X)"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 stroke-[2.5]" />
+            <span>{isAr ? 'إغلاق (X)' : 'Quitter (X)'}</span>
           </button>
         </div>
 
@@ -519,15 +557,21 @@ export const AddPropertyModal: React.FC = () => {
 
             {/* Photos Uploader & Manager */}
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
-              <label className="block text-xs font-bold text-slate-700">
-                {isAr ? 'صور العقار:' : 'Photos de l\'annonce :'}
+              <label className="block text-xs font-bold text-slate-700 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <ImageIcon className="w-4 h-4 text-emerald-600" />
+                  <span>{isAr ? 'صور العقار (من الهاتف أو الحاسوب):' : 'Photos de l\'annonce (Appareil Photo / Fichiers) :'}</span>
+                </span>
+                <span className="text-[11px] font-extrabold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full">
+                  {images.length} photo(s)
+                </span>
               </label>
 
-              {/* Upload from Device or Paste Link */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label className="flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-emerald-300 bg-emerald-50/50 hover:bg-emerald-50 text-emerald-800 text-xs font-bold cursor-pointer transition-colors">
-                  <Upload className="w-4 h-4 text-emerald-600" />
-                  <span>{isAr ? 'رفع صور من الجهاز' : isEn ? 'Upload photos' : 'Importer des photos (Fichiers)'}</span>
+              {/* Upload Buttons for Mobile & Desktop */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <label className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs shadow-md active:scale-95 transition-all cursor-pointer">
+                  <Upload className="w-4 h-4 text-white shrink-0" />
+                  <span>{isAr ? '📷 اختيار صورة من الهاتف' : isEn ? '📷 Choose photos' : '📷 Choisir une photo (Fichiers/Mobile)'}</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -537,34 +581,34 @@ export const AddPropertyModal: React.FC = () => {
                   />
                 </label>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-1">
                   <input
                     type="url"
                     value={newImageUrl}
                     onChange={e => setNewImageUrl(e.target.value)}
-                    placeholder={isAr ? 'أو ألصق رابط صورة...' : 'Ou coller un lien d\'image URL...'}
-                    className="flex-1 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800"
+                    placeholder={isAr ? 'أو ألصق رابط صورة...' : 'Ou coller lien d\'image URL...'}
+                    className="flex-1 px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs text-slate-800"
                   />
                   <button
                     type="button"
                     onClick={handleAddPhotoUrl}
-                    className="px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold cursor-pointer hover:bg-slate-800"
+                    className="px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold cursor-pointer hover:bg-slate-800 shrink-0"
                   >
                     {isAr ? 'إضافة' : 'Ajouter'}
                   </button>
                 </div>
               </div>
 
-              {/* Photo Thumbnails */}
+              {/* Photo Thumbnails with always visible delete button for mobile */}
               {images.length > 0 && (
-                <div className="flex flex-wrap gap-2 pt-2">
+                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 pt-2">
                   {images.map((img, idx) => (
-                    <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden group border border-slate-200">
+                    <div key={idx} className="relative aspect-4/3 rounded-xl overflow-hidden group border border-slate-300 bg-slate-200 shadow-xs">
                       <img src={img} alt={`Photo ${idx+1}`} className="w-full h-full object-cover" />
                       <button
                         type="button"
                         onClick={() => handleRemovePhoto(idx)}
-                        className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        className="absolute top-1 right-1 p-1 bg-rose-600 text-white rounded-full opacity-100 transition-opacity cursor-pointer shadow-md"
                         title="Supprimer la photo"
                       >
                         <Trash2 className="w-3 h-3" />
@@ -576,59 +620,100 @@ export const AddPropertyModal: React.FC = () => {
             </div>
 
             {/* Video Uploader & Manager */}
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
-              <label className="block text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                <VideoIcon className="w-4 h-4 text-amber-500" />
-                <span>
-                  {isAr ? 'فيديوهات الجولة الافتراضية:' : 'Vidéos de visite virtuelle (MP4 ou Liens) :'}
+            <div className="bg-amber-50/50 p-4 rounded-2xl border-2 border-amber-300/80 space-y-3">
+              <label className="block text-xs font-bold text-slate-800 flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-amber-950 font-extrabold">
+                  <VideoIcon className="w-4 h-4 text-amber-600" />
+                  <span>
+                    {isAr ? 'فيديوهات الجولة الافتراضية HD:' : 'Vidéos de visite virtuelle HD (MP4 / Mobile) :'}
+                  </span>
+                </span>
+                <span className="text-[11px] font-black text-amber-900 bg-amber-200 px-2.5 py-0.5 rounded-full">
+                  {videos.length} vidéo(s)
                 </span>
               </label>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label className="flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-amber-300 bg-amber-50/50 hover:bg-amber-50 text-amber-900 text-xs font-bold cursor-pointer transition-colors">
-                  <Upload className="w-4 h-4 text-amber-600" />
-                  <span>{isAr ? 'رفع فيديو MP4' : 'Importer une vidéo MP4'}</span>
+              {/* Video Buttons for Mobile & Desktop */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <label className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs shadow-md active:scale-95 transition-all cursor-pointer">
+                  <Upload className="w-4 h-4 text-slate-950 shrink-0" />
+                  <span>{isAr ? '🎥 إرفاق فيديو MP4 من الهاتف' : isEn ? '🎥 Attach MP4 Video' : '🎥 Joindre une vidéo MP4 (Mobile/PC)'}</span>
                   <input
                     type="file"
-                    accept="video/*"
+                    accept="video/mp4,video/*"
+                    multiple
                     onChange={handleVideoFileUpload}
                     className="hidden"
                   />
                 </label>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-1">
                   <input
                     type="url"
                     value={newVideoUrl}
                     onChange={e => setNewVideoUrl(e.target.value)}
-                    placeholder="Lien vidéo MP4 ou YouTube..."
-                    className="flex-1 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800"
+                    placeholder="Ou lien vidéo MP4..."
+                    className="flex-1 px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs text-slate-800"
                   />
                   <button
                     type="button"
                     onClick={handleAddVideoUrl}
-                    className="px-3 py-2 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold cursor-pointer hover:bg-amber-400"
+                    className="px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold cursor-pointer hover:bg-slate-800 shrink-0"
                   >
                     {isAr ? 'إضافة فيديو' : 'Ajouter Vidéo'}
                   </button>
                 </div>
               </div>
 
-              {/* Video List Chips */}
+              {/* Preset Virtual Tour Quick Add buttons */}
+              <div className="pt-1">
+                <span className="text-[11px] font-extrabold text-amber-950 block mb-1.5">
+                  {isAr ? '🎬 أو اختر فيديو زيارة افتراضية جاهز HD بنقرة واحدة:' : '🎬 Ou cliquer pour ajouter une vidéo HD de visite virtuelle exemple :'}
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleAddPresetVideo('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4')}
+                    className="px-3 py-1.5 rounded-xl bg-white hover:bg-amber-100 text-amber-950 text-[11px] font-black border border-amber-400 flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 transition-all"
+                  >
+                    <Play className="w-3 h-3 fill-amber-700 text-amber-700 shrink-0" />
+                    <span>Appartement Lumineux HD</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddPresetVideo('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4')}
+                    className="px-3 py-1.5 rounded-xl bg-white hover:bg-amber-100 text-amber-950 text-[11px] font-black border border-amber-400 flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 transition-all"
+                  >
+                    <Play className="w-3 h-3 fill-amber-700 text-amber-700 shrink-0" />
+                    <span>Séjour & Villa Luxe HD</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddPresetVideo('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4')}
+                    className="px-3 py-1.5 rounded-xl bg-white hover:bg-amber-100 text-amber-950 text-[11px] font-black border border-amber-400 flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 transition-all"
+                  >
+                    <Play className="w-3 h-3 fill-amber-700 text-amber-700 shrink-0" />
+                    <span>Cuisine & Duplex HD</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Added Videos List */}
               {videos.length > 0 && (
                 <div className="space-y-2 pt-2">
                   {videos.map((vid, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200 text-xs">
+                    <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-amber-300 text-xs shadow-2xs">
                       <div className="flex items-center gap-2 overflow-hidden pr-2">
-                        <Play className="w-4 h-4 text-amber-500 shrink-0 fill-amber-500" />
-                        <span className="truncate font-mono text-[11px] text-slate-700">{vid}</span>
+                        <Play className="w-4 h-4 text-amber-600 shrink-0 fill-amber-600" />
+                        <span className="truncate font-mono text-[11px] text-slate-800 font-bold">{vid}</span>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleRemoveVideo(idx)}
-                        className="p-1 text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
+                        className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition-colors cursor-pointer shrink-0"
+                        title="Supprimer la vidéo"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   ))}

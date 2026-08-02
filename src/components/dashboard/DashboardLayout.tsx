@@ -8,8 +8,12 @@ import { AnalyticsTab } from './AnalyticsTab';
 import { AiManagementTab } from './AiManagementTab';
 import { LayoutDashboard, Building2, Users, LineChart, PlusCircle, ArrowLeft, ShieldCheck, Sparkles } from 'lucide-react';
 
-export const DashboardLayout: React.FC = () => {
-  const { t } = useLanguage();
+interface DashboardLayoutProps {
+  onSelectTab?: (tab: 'home' | 'estimation' | 'favorites' | 'dashboard') => void;
+}
+
+export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ onSelectTab }) => {
+  const { t, language } = useLanguage();
   const { setIsAddModalOpen, setUserRole } = usePropertyContext();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'ai' | 'properties' | 'leads' | 'analytics'>('ai');
@@ -22,27 +26,83 @@ export const DashboardLayout: React.FC = () => {
     { id: 'analytics', label: "Statistiques & Marché", icon: LineChart }
   ] as const;
 
+  const handleReturnPublic = () => {
+    setUserRole('public');
+    if (onSelectTab) {
+      onSelectTab('home');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-slate-900 pb-16">
       
       {/* Top Banner Bar for Agent Mode */}
-      <div className="bg-slate-900 text-white px-4 py-2 text-xs flex items-center justify-between border-b border-slate-800">
+      <div className="bg-slate-900 text-white px-4 py-2.5 text-xs flex flex-wrap items-center justify-between gap-2 border-b border-slate-800">
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-emerald-400" />
           <span className="font-bold">Espace Administrateur Pro ImmoWin Algérie</span>
           <span className="hidden sm:inline text-slate-400 font-normal">| Devise active: DZD</span>
         </div>
 
-        <button
-          onClick={() => setUserRole('public')}
-          className="text-[11px] font-bold text-slate-300 hover:text-white flex items-center gap-1 cursor-pointer"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Retourner au site public</span>
-        </button>
+        {/* Quick Exit & Navigation Choices from Dashboard */}
+        <div className="flex items-center gap-2">
+          {onSelectTab && (
+            <button
+              onClick={() => onSelectTab('home')}
+              className="px-3 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 border border-slate-700"
+            >
+              <span>🏠 Voir les Annonces</span>
+            </button>
+          )}
+
+          <button
+            onClick={handleReturnPublic}
+            className="text-[11px] font-extrabold text-amber-300 hover:text-amber-200 flex items-center gap-1 cursor-pointer bg-slate-800/80 px-3 py-1 rounded-xl border border-amber-500/30"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>{language === 'AR' ? 'الخروج والعودة للموقع' : 'Fermer le Tableau de Bord'}</span>
+          </button>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        
+        {/* Direct Destination Quick Bar */}
+        <div className="mb-6 p-4 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider font-outfit">
+              {language === 'AR' ? 'الانتقال المباشر من لوحة التحكم:' : 'Accès Direct depuis le Tableau de Bord :'}
+            </h3>
+            <p className="text-xs text-slate-600 font-medium">
+              {language === 'AR' ? 'انقر على أي خيار لإغلاق لوحة التحكم والانتقال فوراً للصفحة المطلوب' : 'Cliquez sur un choix pour fermer le tableau de bord et naviguer directement.'}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            {onSelectTab && (
+              <>
+                <button
+                  onClick={() => onSelectTab('home')}
+                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-800 hover:text-emerald-700 font-bold text-xs border border-slate-200 transition-colors cursor-pointer"
+                >
+                  🏠 {language === 'AR' ? 'قائمة العقارات' : 'Annonces Immobilier'}
+                </button>
+                <button
+                  onClick={() => onSelectTab('estimation')}
+                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-800 hover:text-emerald-700 font-bold text-xs border border-slate-200 transition-colors cursor-pointer"
+                >
+                  🧮 {language === 'AR' ? 'حاسبة التقييم' : 'Calculateur IA'}
+                </button>
+                <button
+                  onClick={() => onSelectTab('favorites')}
+                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-800 hover:text-rose-600 font-bold text-xs border border-slate-200 transition-colors cursor-pointer"
+                >
+                  ❤️ {language === 'AR' ? 'المفضلة' : 'Favoris'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* PERSISTENT LEFT SIDEBAR */}

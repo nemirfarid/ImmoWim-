@@ -226,12 +226,6 @@ const MainAppContent: React.FC = () => {
               onOpenSmartImporter={() => setIsSmartImporterOpen(true)}
             />
 
-            {/* Potential Buyers Banner for Sellers (Prominent at top of page) */}
-            <PotentialBuyersBanner
-              onOpenAddProperty={() => setIsAddModalOpen(true)}
-              onOpenCriteriaModal={() => setIsCriteriaModalOpen(true)}
-            />
-
             {/* Filter Bar Component */}
             <FilterBar />
 
@@ -394,7 +388,7 @@ const MainAppContent: React.FC = () => {
 
         {/* TAB 4: AGENT / ADMINISTRATOR DASHBOARD */}
         {currentTab === 'dashboard' && (
-          <DashboardLayout />
+          <DashboardLayout onSelectTab={(tab) => setCurrentTab(tab)} />
         )}
 
       </div>

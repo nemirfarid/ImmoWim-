@@ -5,7 +5,7 @@ import { getWhatsAppLink, getTelLink, getSmsLink } from '../utils/communication'
 import { usePropertyContext } from '../context/PropertyContext';
 import { useLanguage } from '../context/LanguageContext';
 import { translateStanding } from '../utils/languageHelpers';
-import { Heart, MapPin, Maximize2, Bed, Bath, ChevronLeft, ChevronRight, CheckCircle2, Phone, MessageCircle, MessageSquare } from 'lucide-react';
+import { Heart, MapPin, Maximize2, Bed, Bath, ChevronLeft, ChevronRight, CheckCircle2, Phone, MessageCircle, MessageSquare, Edit2, Trash2 } from 'lucide-react';
 
 interface PropertyCardProps {
   property: Property;
@@ -13,9 +13,17 @@ interface PropertyCardProps {
 }
 
 export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect }) => {
-  const { toggleFavorite } = usePropertyContext();
+  const { toggleFavorite, deleteProperty, showToast } = usePropertyContext();
   const { language, t } = useLanguage();
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm("Voulez-vous vraiment supprimer cette annonce immobilière ?")) {
+      deleteProperty(property.id);
+      showToast("Annonce supprimée.");
+    }
+  };
 
   const whatsappMsg = language === 'AR'
     ? `مرحباً، أنا مهتم بعقاركم "${property.title}" (${formatDZD(property.priceDZD)}) في ${property.wilaya}. يرجى التواصل معي.`
@@ -61,15 +69,32 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect }
         {/* Dark subtle overlay for badge legibility */}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-black/20" />
 
-        {/* Favorite Heart Button */}
-        <button
-          id={`fav-btn-${property.id}`}
-          onClick={handleFavoriteClick}
-          className="absolute top-3 right-3 rtl:right-auto rtl:left-3 z-10 p-2.5 rounded-full bg-white/80 hover:bg-white text-slate-700 hover:text-rose-500 backdrop-blur-md shadow-md transition-all transform active:scale-90 cursor-pointer"
-          aria-label="Favorite"
-        >
-          <Heart className={`w-4 h-4 ${property.isFavorite ? 'text-rose-500 fill-rose-500' : ''}`} />
-        </button>
+        {/* Favorite, Edit & Delete Quick Controls */}
+        <div className="absolute top-3 right-3 rtl:right-auto rtl:left-3 z-10 flex items-center gap-1.5">
+          <button
+            onClick={(e) => { e.stopPropagation(); onSelect(property); }}
+            className="p-2 rounded-full bg-white/80 hover:bg-emerald-600 hover:text-white text-slate-700 backdrop-blur-md shadow-md transition-all transform active:scale-90 cursor-pointer"
+            title="Modifier l'annonce"
+          >
+            <Edit2 className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={handleDelete}
+            className="p-2 rounded-full bg-white/80 hover:bg-rose-600 hover:text-white text-slate-700 backdrop-blur-md shadow-md transition-all transform active:scale-90 cursor-pointer"
+            title="Supprimer l'annonce"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+          <button
+            id={`fav-btn-${property.id}`}
+            onClick={handleFavoriteClick}
+            className="p-2 rounded-full bg-white/80 hover:bg-white text-slate-700 hover:text-rose-500 backdrop-blur-md shadow-md transition-all transform active:scale-90 cursor-pointer"
+            aria-label="Favorite"
+            title="Ajouter aux favoris"
+          >
+            <Heart className={`w-3.5 h-3.5 ${property.isFavorite ? 'text-rose-500 fill-rose-500' : ''}`} />
+          </button>
+        </div>
 
         {/* Status Tag Badge */}
         <div className="absolute top-3 left-3 rtl:left-auto rtl:right-3 z-10 flex flex-col gap-1.5 items-start rtl:items-end">
@@ -188,42 +213,55 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect }
               </span>
             )}
 
-            <div className="flex flex-wrap items-center gap-1.5" onClick={e => e.stopPropagation()}>
-              {/* Phone Number Display Badge */}
-              <span dir="ltr" className="font-mono text-[10px] font-bold text-slate-800 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
-                {property.sellerPhone}
-              </span>
-
-              {/* Separate WhatsApp Icon Button */}
+            <div className="flex flex-col items-stretch sm:items-end gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
+              {/* WhatsApp Button */}
               <a
                 id={`card-whatsapp-${property.id}`}
                 href={getWhatsAppLink(property.sellerPhone, whatsappMsg)}
                 target="_blank"
                 rel="noopener noreferrer"
-                title={`${t.propertyWhatsapp} : ${property.sellerPhone}`}
-                className="p-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-all flex items-center justify-center cursor-pointer shadow-xs hover:scale-105"
+                title={`WhatsApp: ${property.sellerPhone}`}
+                className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all flex items-center justify-between gap-2 cursor-pointer shadow-xs active:scale-95"
               >
-                <MessageCircle className="w-3.5 h-3.5 fill-white" />
+                <div className="flex items-center gap-1.5">
+                  <MessageCircle className="w-3.5 h-3.5 fill-white shrink-0" />
+                  <span className="text-[10px] font-bold">WhatsApp</span>
+                </div>
+                <span dir="ltr" className="font-mono text-[10px] font-bold bg-emerald-700/60 px-1.5 py-0.5 rounded text-emerald-100">
+                  {property.sellerPhone}
+                </span>
               </a>
 
-              {/* Separate Phone Call Icon Button */}
+              {/* Phone Call Button */}
               <a
                 id={`card-tel-${property.id}`}
                 href={getTelLink(property.sellerPhone)}
-                title={`${t.propertyCall} : ${property.sellerPhone}`}
-                className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-all flex items-center justify-center cursor-pointer shadow-xs hover:scale-105"
+                title={`Appeler: ${property.sellerPhone}`}
+                className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white transition-all flex items-center justify-between gap-2 cursor-pointer shadow-xs border border-slate-800 active:scale-95"
               >
-                <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                <div className="flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span className="text-[10px] font-bold">{language === 'AR' ? 'اتصال' : 'Appeler'}</span>
+                </div>
+                <span dir="ltr" className="font-mono text-[10px] font-bold text-emerald-300 bg-slate-950 px-1.5 py-0.5 rounded">
+                  {property.sellerPhone}
+                </span>
               </a>
 
-              {/* Separate SMS Icon Button */}
+              {/* Message Button (Replaced SMS word) */}
               <a
-                id={`card-sms-${property.id}`}
+                id={`card-msg-${property.id}`}
                 href={getSmsLink(property.sellerPhone, smsMsg)}
-                title={t.propertySms}
-                className="p-1.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white transition-all flex items-center justify-center cursor-pointer shadow-xs hover:scale-105"
+                title={language === 'AR' ? 'رسالة جديدة' : 'Nouveau Message'}
+                className="px-2.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white transition-all flex items-center justify-between gap-2 cursor-pointer shadow-xs active:scale-95"
               >
-                <MessageSquare className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5 text-white shrink-0" />
+                  <span className="text-[10px] font-bold">{language === 'AR' ? 'رسالة' : 'Message'}</span>
+                </div>
+                <span dir="ltr" className="font-mono text-[10px] font-bold bg-sky-700/60 px-1.5 py-0.5 rounded text-sky-100">
+                  {property.sellerPhone}
+                </span>
               </a>
             </div>
           </div>

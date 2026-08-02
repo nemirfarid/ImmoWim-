@@ -158,9 +158,11 @@ export const FreeAdModal: React.FC<FreeAdModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors cursor-pointer"
+            className="px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-rose-100 text-slate-700 hover:text-rose-600 font-extrabold text-xs transition-colors cursor-pointer border border-slate-200 flex items-center gap-1 shadow-xs"
+            title="Quitter la page (X)"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 stroke-[2.5]" />
+            <span>Quitter (X)</span>
           </button>
         </div>
 

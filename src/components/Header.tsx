@@ -25,9 +25,17 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, onOpe
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
-          {/* Logo */}
-          <div className="cursor-pointer group" onClick={() => setCurrentTab('home')}>
+          {/* Main Logo & Menu Trigger Button (Clicking logo opens menu) */}
+          <div 
+            id="main-logo-menu-trigger"
+            className="cursor-pointer group flex items-center gap-2 p-1 rounded-2xl hover:bg-slate-100/80 transition-all" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            title="Menu Principal ImmoWin"
+          >
             <ImmoWinLogo size="md" variant="full" />
+            <span className="text-xs text-slate-400 group-hover:text-emerald-600 transition-colors">
+              {mobileMenuOpen ? '▲' : '▼'}
+            </span>
           </div>
 
           {/* Desktop Navigation Links */}
@@ -198,21 +206,12 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, onOpe
                 <span>{t.navLogin}</span>
               </button>
             )}
-
-            {/* Mobile Hamburger toggle */}
-            <button
-              id="mobile-menu-toggle-btn"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
           </div>
         </div>
 
-        {/* Mobile menu dropdown */}
+        {/* Menu dropdown toggled by main logo click */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-slate-100 space-y-2 animate-in fade-in slide-in-from-top-2">
+          <div className="py-4 border-t border-slate-100 space-y-2 animate-in fade-in slide-in-from-top-2">
             <button
               onClick={() => { setCurrentTab('home'); setMobileMenuOpen(false); }}
               className={`w-full text-left rtl:text-right px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 ${

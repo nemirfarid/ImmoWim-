@@ -114,9 +114,11 @@ export const OutreachGeneratorModal: React.FC<OutreachGeneratorModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-full bg-rose-500/20 hover:bg-rose-600 text-white font-extrabold text-xs transition-colors cursor-pointer border border-rose-300/30 flex items-center gap-1 shadow-md"
+            title="Quitter la page (X)"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 stroke-[2.5]" />
+            <span>Quitter (X)</span>
           </button>
         </div>
 

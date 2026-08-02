@@ -118,7 +118,7 @@ export const INITIAL_PROPERTIES: Property[] = [
       "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80"
     ],
     videos: [
-      "https://assets.mixkit.co/videos/preview/mixkit-modern-apartment-interior-with-a-view-41551-large.mp4"
+      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
     ],
     isFavorite: true,
     status: "A Vendre",
@@ -161,7 +161,7 @@ export const INITIAL_PROPERTIES: Property[] = [
       "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80"
     ],
     videos: [
-      "https://assets.mixkit.co/videos/preview/mixkit-living-room-of-a-luxurious-home-41549-large.mp4"
+      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
     ],
     isFavorite: false,
     status: "A Vendre",
@@ -202,6 +202,9 @@ export const INITIAL_PROPERTIES: Property[] = [
       "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80",
       "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=1200&q=80"
     ],
+    videos: [
+      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+    ],
     isFavorite: false,
     status: "A Vendre",
     tag: "Prix Négociable",
@@ -241,6 +244,9 @@ export const INITIAL_PROPERTIES: Property[] = [
       "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80",
       "https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1200&q=80"
     ],
+    videos: [
+      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    ],
     isFavorite: false,
     status: "A Vendre",
     tag: "Investissement Pro",
@@ -277,6 +283,9 @@ export const INITIAL_PROPERTIES: Property[] = [
     images: [
       "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80",
       "https://images.unsplash.com/photo-1628624747186-a941c476b7ef?auto=format&fit=crop&w=1200&q=80"
+    ],
+    videos: [
+      "https://assets.mixkit.co/videos/preview/mixkit-modern-apartment-interior-with-a-view-41551-large.mp4"
     ],
     isFavorite: true,
     status: "A Vendre",
@@ -317,6 +326,9 @@ export const INITIAL_PROPERTIES: Property[] = [
       "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
       "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80"
     ],
+    videos: [
+      "https://assets.mixkit.co/videos/preview/mixkit-living-room-of-a-luxurious-home-41549-large.mp4"
+    ],
     isFavorite: false,
     status: "A Vendre",
     tag: "Coup de Cœur",
@@ -356,6 +368,9 @@ export const INITIAL_PROPERTIES: Property[] = [
       "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?auto=format&fit=crop&w=1200&q=80",
       "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80"
     ],
+    videos: [
+      "https://assets.mixkit.co/videos/preview/mixkit-kitchen-in-a-modern-house-41550-large.mp4"
+    ],
     isFavorite: false,
     status: "A Louer",
     tag: "Location Meublée",
@@ -392,6 +407,9 @@ export const INITIAL_PROPERTIES: Property[] = [
     images: [
       "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
       "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80"
+    ],
+    videos: [
+      "https://assets.mixkit.co/videos/preview/mixkit-tour-of-a-modern-house-interior-41552-large.mp4"
     ],
     isFavorite: false,
     status: "A Vendre",
