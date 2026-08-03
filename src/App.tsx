@@ -24,6 +24,7 @@ import { SellersBuyersHub } from './components/SellersBuyersHub';
 import { LegalSitemapModal } from './components/LegalSitemapModal';
 import { PromoterInvitationModal } from './components/PromoterInvitationModal';
 import { PotentialBuyersBanner } from './components/PotentialBuyersBanner';
+import { DiasporaBanner } from './components/DiasporaBanner';
 import { Building2, Heart, Search, Sparkles, Filter, X, LayoutGrid, Map as MapIcon } from 'lucide-react';
 
 const MainAppContent: React.FC = () => {
@@ -226,6 +227,11 @@ const MainAppContent: React.FC = () => {
               onOpenSmartImporter={() => setIsSmartImporterOpen(true)}
             />
 
+            {/* Special Diaspora Algérienne Banner Hub - Top Visibility */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <DiasporaBanner />
+            </div>
+
             {/* Filter Bar Component */}
             <FilterBar />
 
@@ -239,6 +245,9 @@ const MainAppContent: React.FC = () => {
             {/* Listings Section */}
             <section id="search-listings-grid" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
               
+              {/* Special Diaspora Algérienne Banner Hub */}
+              <DiasporaBanner />
+
               {/* Promotional Free Ad Banners for Agences & Promoteurs */}
               <AdBannerSection onOpenFreeAdModal={() => setIsFreeAdModalOpen(true)} />
 

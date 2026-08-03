@@ -5,9 +5,11 @@ import { getWhatsAppLink, getTelLink, getSmsLink } from '../utils/communication'
 import { usePropertyContext } from '../context/PropertyContext';
 import { useLanguage } from '../context/LanguageContext';
 import { translateStanding, translateLivretFoncier, translateWilayaLabel } from '../utils/languageHelpers';
+import { getDiasporaPriceSummary } from '../utils/currencyHelpers';
+import { MobileVideoPlayer } from './MobileVideoPlayer';
 import { MapWidget } from './MapWidget';
 import { SEO } from './SEO';
-import { X, Heart, MapPin, Maximize2, Bed, Bath, ShieldCheck, Phone, Mail, Calendar, Send, CheckCircle2, User, UserCheck, Bell, BellRing, TrendingDown, MessageCircle, MessageSquare, Edit2, Trash2, Save, Upload, Plus, Play, Camera, Video, FileText } from 'lucide-react';
+import { X, Heart, MapPin, Maximize2, Bed, Bath, ShieldCheck, Phone, Mail, Calendar, Send, CheckCircle2, User, UserCheck, Bell, BellRing, TrendingDown, MessageCircle, MessageSquare, Edit2, Trash2, Save, Upload, Plus, Play, Camera, Video, FileText, Globe2, Plane, Landmark } from 'lucide-react';
 import { PropertyType, TransactionType } from '../types';
 
 
@@ -1035,85 +1037,18 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({ proper
             {/* Display Media Box */}
             <div className="relative aspect-16/9 rounded-2xl overflow-hidden bg-slate-950 shadow-lg border border-slate-800">
               {selectedImgIdx < 0 && property.videos && property.videos.length > 0 ? (
-                <div className="relative w-full h-full bg-slate-950 flex flex-col items-center justify-center">
-                  {(() => {
-                    const videoIdx = Math.abs(selectedImgIdx) - 1;
-                    const activeVidUrl = property.videos[videoIdx] || property.videos[0];
-                    
-                    // Check if YouTube
-                    const isYouTube = activeVidUrl.includes('youtube.com') || activeVidUrl.includes('youtu.be');
-                    let ytEmbedUrl = '';
-                    if (isYouTube) {
-                      const match = activeVidUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
-                      if (match && match[1]) {
-                        ytEmbedUrl = `https://www.youtube-nocookie.com/embed/${match[1]}?autoplay=1&rel=0`;
-                      }
-                    }
-
-                    if (isYouTube && ytEmbedUrl) {
-                      return (
-                        <iframe
-                          key={ytEmbedUrl}
-                          src={ytEmbedUrl}
-                          title="Visite virtuelle vidéo"
-                          className="w-full h-full border-0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      );
-                    }
-
-                    return (
-                      <div className="relative w-full h-full flex flex-col items-center justify-center bg-black group">
-                        <video
-                          key={activeVidUrl}
-                          src={activeVidUrl}
-                          controls
-                          autoPlay
-                          playsInline
-                          muted={isVideoMuted}
-                          preload="auto"
-                          poster={property.images[0]}
-                          onError={(e) => {
-                            // Backup fallback to reliable Google Cloud Storage sample MP4 if user file stream has unsupported format
-                            const target = e.currentTarget;
-                            if (!target.dataset.triedFallback) {
-                              target.dataset.triedFallback = 'true';
-                              target.src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
-                              target.load();
-                              target.play().catch(() => {});
-                            }
-                          }}
-                          className="w-full h-full object-contain"
-                        >
-                          <source src={activeVidUrl} type="video/mp4" />
-                          <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4" />
-                        </video>
-
-                        {/* Top Control Bar with Sound Toggle and External Link */}
-                        <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
-                          <button
-                            type="button"
-                            onClick={() => setIsVideoMuted(!isVideoMuted)}
-                            className="px-3 py-1.5 rounded-full bg-black/80 hover:bg-black text-white text-xs font-bold border border-white/20 shadow-md backdrop-blur-md flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <span>{isVideoMuted ? '🔇 Son désactivé (Cliquer pour activer)' : '🔊 Son activé'}</span>
-                          </button>
-                          
-                          <a
-                            href={activeVidUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-1.5 rounded-full bg-black/80 hover:bg-black text-amber-400 text-xs font-bold border border-white/20 shadow-md backdrop-blur-md flex items-center justify-center cursor-pointer"
-                            title="Ouvrir la vidéo dans un nouvel onglet"
-                          >
-                            ↗️
-                          </a>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
+                (() => {
+                  const videoIdx = Math.abs(selectedImgIdx) - 1;
+                  const activeVidUrl = property.videos[videoIdx] || property.videos[0];
+                  return (
+                    <MobileVideoPlayer
+                      key={activeVidUrl}
+                      videoUrl={activeVidUrl}
+                      posterImage={property.images[0]}
+                      title={`Visite Virtuelle HD - ${property.title}`}
+                    />
+                  );
+                })()
               ) : (
                 <img
                   src={property.images[selectedImgIdx >= 0 ? selectedImgIdx : 0] || property.images[0]}
@@ -1283,6 +1218,66 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({ proper
                   <span>{language === 'AR' ? 'معاملة آمنة بالدينار الجزائري' : 'Transaction Sécurisée DZD'}</span>
                 </div>
               </div>
+
+              {/* Diaspora Algerian Dedicated Card */}
+              {(() => {
+                const diaspora = getDiasporaPriceSummary(property.priceDZD);
+                return (
+                  <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-950 via-slate-900 to-amber-950 text-white border-2 border-amber-500/40 shadow-xl space-y-4">
+                    <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                          <Globe2 className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <span className="text-xs font-black text-emerald-300 block">
+                            {language === 'AR' ? '🇩🇿 خدمات الجالية الجزائرية بالخارج (Immigrés)' : '🇩🇿 Services Diaspora Algérienne & Immigrés'}
+                          </span>
+                          <span className="text-[11px] text-slate-300 font-medium">
+                            {language === 'AR' ? 'معاينة ومرافقة قانونية للجزائريين المقيمين بالخارج' : 'Achetez et investissez en Algérie en toute sérénité depuis votre pays de résidence'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Foreign Currency Conversion Grid */}
+                    <div className="grid grid-cols-3 gap-2 text-center bg-black/40 p-3 rounded-xl border border-white/10">
+                      <div className="p-2 rounded-lg bg-white/5">
+                        <span className="text-[10px] text-slate-400 block font-bold">EURO (€)</span>
+                        <span className="text-emerald-400 font-black text-xs sm:text-sm">{diaspora.eur}</span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-white/5">
+                        <span className="text-[10px] text-slate-400 block font-bold">CAD ($)</span>
+                        <span className="text-amber-400 font-black text-xs sm:text-sm">{diaspora.cad}</span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-white/5">
+                        <span className="text-[10px] text-slate-400 block font-bold">USD ($)</span>
+                        <span className="text-sky-400 font-black text-xs sm:text-sm">{diaspora.usd}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-3 text-xs pt-1 text-slate-300">
+                      <div className="flex items-center gap-1.5 text-emerald-300 font-bold">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>{language === 'AR' ? 'إمكانية الشراء بالوكالة القنصلية' : 'Procuration Consulaire Dédiée'}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-amber-300 font-bold">
+                        <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
+                        <span>{language === 'AR' ? 'إشراف توثيقي مسبق' : 'Contrôle Notarié Certifié'}</span>
+                      </div>
+                      <a
+                        href={`https://wa.me/213550000000?text=Bonjour,%20je%20suis%20un%20immigr%C3%A9%20de%20la%20diaspora%20et%20je%20suis%20int%C3%A9ress%C3%A9%20par%20le%20bien%20"${encodeURIComponent(property.title)}"%20(${formatDZD(property.priceDZD)})`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full sm:w-auto px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-md transition-all text-center cursor-pointer flex items-center justify-center gap-2"
+                      >
+                        <MessageCircle className="w-4 h-4 fill-slate-950" />
+                        <span>{language === 'AR' ? 'تواصل مع مستشار الجالية' : 'WhatsApp Conseiller Diaspora'}</span>
+                      </a>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Price Alert CTA Banner */}
               <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-between gap-4">

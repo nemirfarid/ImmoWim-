@@ -5,7 +5,8 @@ import { getWhatsAppLink, getTelLink, getSmsLink } from '../utils/communication'
 import { usePropertyContext } from '../context/PropertyContext';
 import { useLanguage } from '../context/LanguageContext';
 import { translateStanding } from '../utils/languageHelpers';
-import { Heart, MapPin, Maximize2, Bed, Bath, ChevronLeft, ChevronRight, CheckCircle2, Phone, MessageCircle, MessageSquare, Edit2, Trash2 } from 'lucide-react';
+import { getDiasporaPriceSummary } from '../utils/currencyHelpers';
+import { Heart, MapPin, Maximize2, Bed, Bath, ChevronLeft, ChevronRight, CheckCircle2, Phone, MessageCircle, MessageSquare, Edit2, Trash2, Globe2 } from 'lucide-react';
 
 interface PropertyCardProps {
   property: Property;
@@ -149,13 +150,23 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect }
         )}
 
         {/* Price Tag Overlay at Bottom */}
-        <div className="absolute bottom-3 left-3 rtl:left-auto rtl:right-3 z-10" dir="ltr">
+        <div className="absolute bottom-3 left-3 rtl:left-auto rtl:right-3 z-10 flex flex-col items-start gap-1" dir="ltr">
           <div className="bg-emerald-600/95 text-white font-extrabold text-sm sm:text-base px-3 py-1 rounded-xl shadow-md backdrop-blur-md flex items-center gap-1 [direction:ltr]">
             <span dir="ltr" className="inline-block [direction:ltr]">{formatDZD(property.priceDZD)}</span>
             {property.transactionType === 'Location' && (
               <span className="text-xs font-normal opacity-90">{t.propertyPriceMonth}</span>
             )}
           </div>
+          {/* Diaspora Euro / CAD / USD Equivalency Pill */}
+          {(() => {
+            const diaspora = getDiasporaPriceSummary(property.priceDZD);
+            return (
+              <div className="bg-slate-900/90 text-amber-300 border border-amber-500/30 text-[10px] font-black px-2.5 py-0.5 rounded-lg shadow-sm backdrop-blur-md flex items-center gap-1">
+                <Globe2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                <span>≈ {diaspora.eur} | {diaspora.cad}</span>
+              </div>
+            );
+          })()}
         </div>
       </div>
 

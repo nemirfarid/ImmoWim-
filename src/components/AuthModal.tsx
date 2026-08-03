@@ -20,6 +20,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   const [gender, setGender] = useState<'homme' | 'femme'>('homme');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [accountRole, setAccountRole] = useState<'acheteur' | 'vendeur' | 'promoteur' | 'agence'>('acheteur');
+  
+  // Auto-calculated budget states for registration
+  const [inputBudgetVal, setInputBudgetVal] = useState<number>(100000); // default 100k €
+  const [inputCurrency, setInputCurrency] = useState<'EUR' | 'DZD'>('EUR');
+
+  // Automatic budget calculations
+  const exchangeRateEUR = 270; // 1 EUR = 270 DZD
+  const computedDZD = inputCurrency === 'EUR' ? inputBudgetVal * exchangeRateEUR : inputBudgetVal;
+  const computedEUR = inputCurrency === 'DZD' ? Math.round((inputBudgetVal / exchangeRateEUR) / 1000) * 1000 : inputBudgetVal;
+  const centimesMilliards = (computedDZD / 10000000).toFixed(2); // 1 Milliard = 10,000,000 DZD (100 millions centimes)
 
   if (!isOpen) return null;
 
@@ -35,7 +45,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
     setUserRole('agent');
     const genderLabel = gender === 'femme' ? 'Mme' : 'M.';
     const nameDisplay = fullName ? `${genderLabel} ${fullName}` : email;
-    showToast(`Compte créé avec succès ! Bienvenue ${nameDisplay}`);
+    const formattedEur = computedEUR.toLocaleString('fr-FR');
+    showToast(`Compte créé avec succès ! Bienvenue ${nameDisplay} (Budget calculé: ${formattedEur} € / ${centimesMilliards} Milliards)`);
     onClose();
     onSuccessDashboard();
   };
@@ -228,11 +239,69 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                 onChange={e => setAccountRole(e.target.value as any)}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500/50"
               >
-                <option value="acheteur">🛒 Acheteur / Acquéreur de bien</option>
+                <option value="acheteur">🛒 Acheteur / Acquéreur (Particulier ou Diaspora)</option>
                 <option value="vendeur">🔑 Vendeur / Propriétaire Particulier</option>
                 <option value="promoteur">🏢 Promoteur Immobilier (Projets Neufs VEFA)</option>
                 <option value="agence">💼 Agence Immobilière / Agent Professionnel</option>
               </select>
+            </div>
+          )}
+
+          {/* Automatic Budget Calculation Box upon Registration */}
+          {!isLogin && (
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-950 to-slate-900 border border-emerald-500/40 text-white space-y-3 shadow-md">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold text-amber-300 uppercase tracking-wide flex items-center gap-1.5">
+                  <span>💶 Calculateur Automatique de Budget</span>
+                </span>
+                <span className="text-[10px] bg-emerald-800/80 px-2 py-0.5 rounded-full font-mono text-emerald-200">
+                  1 € = 270 DZD (Square)
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-300 uppercase mb-1">
+                    Votre Budget ({inputCurrency === 'EUR' ? 'Euros €' : 'Dinars DZD'})
+                  </label>
+                  <input
+                    type="number"
+                    min={1000}
+                    step={1000}
+                    value={inputBudgetVal}
+                    onChange={e => setInputBudgetVal(Number(e.target.value) || 0)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono text-xs font-bold focus:ring-2 focus:ring-emerald-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-300 uppercase mb-1">Monnaie d'entrée</label>
+                  <select
+                    value={inputCurrency}
+                    onChange={e => setInputCurrency(e.target.value as any)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-amber-300 font-bold text-xs"
+                  >
+                    <option value="EUR">Euros (€ - Diaspora)</option>
+                    <option value="DZD">Dinars (DZD - Algérie)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Instant Calculated Conversion Output */}
+              <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 space-y-1.5 text-xs">
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Equivalence en Dinars DZD :</span>
+                  <span className="font-mono font-bold text-emerald-400">{computedDZD.toLocaleString('fr-FR')} DZD</span>
+                </div>
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Equivalence en Centimes / Milliards :</span>
+                  <span className="font-mono font-bold text-amber-300">{centimesMilliards} Milliard(s) Centimes</span>
+                </div>
+                <div className="flex justify-between items-center text-slate-300 border-t border-slate-700/60 pt-1.5">
+                  <span>Budget arrondi en Euro (Marché Noir) :</span>
+                  <span className="font-mono font-extrabold text-sky-300 text-sm">{computedEUR.toLocaleString('fr-FR')} €</span>
+                </div>
+              </div>
             </div>
           )}
 

@@ -61,12 +61,14 @@ export const EstimationWizard: React.FC = () => {
     if (formData.hasGarage) basePricePerM2 *= 1.05;
     if (formData.hasElevator && formData.propertyType === 'Appartement') basePricePerM2 *= 1.04;
 
-    const estimatedCentral = Math.round(basePricePerM2 * formData.surfaceM2);
-    const minRange = Math.round(estimatedCentral * 0.92);
-    const maxRange = Math.round(estimatedCentral * 1.08);
+    // Round to clean 100,000 DZD figure for clarity
+    const rawCentral = basePricePerM2 * formData.surfaceM2;
+    const estimatedCentral = Math.round(rawCentral / 100000) * 100000;
+    const minRange = Math.round((estimatedCentral * 0.92) / 100000) * 100000;
+    const maxRange = Math.round((estimatedCentral * 1.08) / 100000) * 100000;
 
     // Monthly Rent & Yield
-    const estimatedMonthlyRent = Math.round((estimatedCentral * 0.0045));
+    const estimatedMonthlyRent = Math.round((estimatedCentral * 0.0045) / 5000) * 5000;
     const rentalYield = Number(((estimatedMonthlyRent * 12) / estimatedCentral * 100).toFixed(1));
 
     const res: EstimationResult = {
@@ -416,19 +418,67 @@ export const EstimationWizard: React.FC = () => {
                     Valeur Estimée Instantanée ({formData.wilaya}, {formData.commune})
                   </span>
 
-                  {/* Main Highlight Price */}
-                  <h3 className="text-3xl sm:text-5xl font-extrabold text-white font-outfit my-3">
-                    {formatDZD(result.estimatedPriceDZD)}
-                  </h3>
+                  {/* Main Highlight Price & Rounded Euro Equivalence */}
+                  <div className="flex flex-col md:flex-row md:items-baseline justify-between gap-4 my-4">
+                    <div>
+                      <span className="text-[11px] text-emerald-400 font-extrabold uppercase tracking-wider block">
+                        Prix Arrondi en Dinars Algériens (DZD)
+                      </span>
+                      <h3 className="text-3xl sm:text-5xl font-extrabold text-white font-outfit">
+                        {formatDZD(result.estimatedPriceDZD)}
+                      </h3>
+                    </div>
+
+                    <div className="p-3.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-left">
+                      <span className="text-[10px] text-amber-300 font-extrabold uppercase tracking-wider block">
+                        Équivalence Arrondie en Euros (€)
+                      </span>
+                      <span className="text-2xl sm:text-3xl font-black text-amber-300 font-mono">
+                        {(Math.round((result.estimatedPriceDZD / 270) / 1000) * 1000).toLocaleString('fr-FR')} €
+                      </span>
+                      <span className="text-[10px] text-slate-300 block font-mono">
+                        (Taux Marché Parallèle: 1 € = 270 DZD)
+                      </span>
+                    </div>
+                  </div>
 
                   {/* Range Pills */}
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-xs text-slate-200 font-bold">
+                  <div className="inline-flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-xs text-slate-200 font-bold">
                     <span>Fourchette probable :</span>
                     <span className="text-emerald-400">{formatDZD(result.priceRangeMinDZD)}</span>
                     <span>&mdash;</span>
                     <span className="text-emerald-400">{formatDZD(result.priceRangeMaxDZD)}</span>
+                    <span className="text-amber-300 border-l border-white/20 pl-2">
+                      ({(Math.round((result.priceRangeMinDZD / 270) / 1000) * 1000).toLocaleString('fr-FR')} € &mdash; {(Math.round((result.priceRangeMaxDZD / 270) / 1000) * 1000).toLocaleString('fr-FR')} €)
+                    </span>
                   </div>
                 </div>
+              </div>
+
+              {/* Bank Loan Rights Highlight Box for Foreigners & Diaspora */}
+              <div className="p-5 rounded-3xl bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 border-2 border-emerald-500/40 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-black">
+                    <Building2 className="w-4 h-4 text-emerald-400" />
+                    <span>Droit au Prêt Bancaire & Crédit Immobilier en Algérie</span>
+                  </div>
+                  <h4 className="text-base font-extrabold text-white">
+                    Vous êtes étranger, non-résident ou membre de la Diaspora ?
+                  </h4>
+                  <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                    Vous avez le droit légal de bénéficier d'un prêt bancaire et d'un crédit immobilier (financement classique ou participatif/halal jusqu'à 80-100%) auprès des banques algériennes (CPA, BNA, CNEA, Banque de l'Habitat) pour <strong>acheter ou bâtir une maison, un appartement ou une villa</strong>.
+                  </p>
+                </div>
+
+                <a
+                  href="https://wa.me/213773474096?text=Bonjour,%20je%20souhaite%20estimer%20ma%20capacit%C3%A9%20de%20pr%C3%Aat%20bancaire%20immobilier%20pour%20acheter%20ou%20b%C3%A2tir%20un%20bien"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-lg transition-all cursor-pointer flex items-center gap-2"
+                >
+                  <span>Demander mon Prêt Bancaire</span>
+                  <ArrowRight className="w-4 h-4" />
+                </a>
               </div>
 
               {/* Metrics Grid */}
